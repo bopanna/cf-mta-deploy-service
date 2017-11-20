@@ -1,6 +1,5 @@
 package com.sap.cloud.lm.sl.cf.process.steps;
 
-import org.activiti.engine.delegate.DelegateExecution;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -13,12 +12,12 @@ import com.sap.cloud.lm.sl.cf.process.Constants;
 public class PrepareAppsRestartStep extends PrepareAppsDeploymentStep {
 
     @Override
-    protected ExecutionStatus executeStepInternal(DelegateExecution context) {
-        super.executeStepInternal(context);
+    protected ExecutionStatus executeStep(ExecutionWrapper execution) {
+        super.executeStep(execution);
 
-        context.setVariable(Constants.REBUILD_APP_ENV, true);
-        context.setVariable(Constants.SHOULD_UPLOAD_APPLICATION_CONTENT, false);
-        context.setVariable(Constants.EXECUTE_ONE_OFF_TASKS, false);
+        execution.getContext().setVariable(Constants.REBUILD_APP_ENV, true);
+        execution.getContext().setVariable(Constants.SHOULD_UPLOAD_APPLICATION_CONTENT, false);
+        execution.getContext().setVariable(Constants.EXECUTE_ONE_OFF_TASKS, false);
 
         return ExecutionStatus.SUCCESS;
     }
