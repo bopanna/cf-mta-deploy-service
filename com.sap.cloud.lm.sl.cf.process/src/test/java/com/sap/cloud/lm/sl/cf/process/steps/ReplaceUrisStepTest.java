@@ -24,7 +24,7 @@ import com.sap.cloud.lm.sl.common.util.Pair;
 import com.sap.cloud.lm.sl.common.util.TestUtil;
 
 @RunWith(Parameterized.class)
-public class ReplaceUrisStepTest extends AbstractStepTest<ReplaceRoutesStep> {
+public class ReplaceUrisStepTest extends SyncActivitiStepTest<ReplaceRoutesStep> {
 
     private static class StepInput {
 

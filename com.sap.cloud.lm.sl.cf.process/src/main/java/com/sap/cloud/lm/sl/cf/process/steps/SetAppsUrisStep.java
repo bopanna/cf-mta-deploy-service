@@ -2,26 +2,25 @@ package com.sap.cloud.lm.sl.cf.process.steps;
 
 import java.util.List;
 
-import org.activiti.engine.delegate.DelegateExecution;
 import org.cloudfoundry.client.lib.domain.CloudApplication;
 
 import com.sap.activiti.common.ExecutionStatus;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.process.message.Messages;
 
-public abstract class SetAppsUrisStep extends AbstractProcessStep {
+public abstract class SetAppsUrisStep extends SyncActivitiStep {
 
     @Override
-    protected ExecutionStatus executeStepInternal(DelegateExecution context) {
+    protected ExecutionStatus executeStep(ExecutionWrapper execution) {
         getStepLogger().logActivitiTask();
 
         getStepLogger().info(getStartProgressMessage());
 
-        List<CloudApplicationExtended> apps = StepsUtil.getAppsToDeploy(context);
+        List<CloudApplicationExtended> apps = StepsUtil.getAppsToDeploy(execution.getContext());
         for (CloudApplicationExtended app : apps) {
             assignUris(app);
         }
-        StepsUtil.setAppsToDeploy(context, apps);
+        StepsUtil.setAppsToDeploy(execution.getContext(), apps);
 
         getStepLogger().debug(getEndProgressMessage());
         return ExecutionStatus.SUCCESS;
