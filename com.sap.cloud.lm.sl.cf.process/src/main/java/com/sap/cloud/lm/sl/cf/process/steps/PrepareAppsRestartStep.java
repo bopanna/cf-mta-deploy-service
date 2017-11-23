@@ -4,7 +4,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.sap.activiti.common.ExecutionStatus;
 import com.sap.cloud.lm.sl.cf.process.Constants;
 
 @Component("prepareAppsRestartStep")
@@ -12,14 +11,14 @@ import com.sap.cloud.lm.sl.cf.process.Constants;
 public class PrepareAppsRestartStep extends PrepareAppsDeploymentStep {
 
     @Override
-    protected ExecutionStatus executeStep(ExecutionWrapper execution) {
+    protected StepPhase executeStep(ExecutionWrapper execution) {
         super.executeStep(execution);
 
         execution.getContext().setVariable(Constants.REBUILD_APP_ENV, true);
         execution.getContext().setVariable(Constants.SHOULD_UPLOAD_APPLICATION_CONTENT, false);
         execution.getContext().setVariable(Constants.EXECUTE_ONE_OFF_TASKS, false);
 
-        return ExecutionStatus.SUCCESS;
+        return StepPhase.DONE;
     }
 
 }

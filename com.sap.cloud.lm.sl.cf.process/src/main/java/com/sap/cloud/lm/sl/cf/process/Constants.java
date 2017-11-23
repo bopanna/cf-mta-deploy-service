@@ -129,5 +129,9 @@ public class Constants {
     public static final String EXECUTE_ONE_OFF_TASKS = "executeOneOffTasks";
     public static final String SHOULD_UPLOAD_APPLICATION_CONTENT = "shouldUploadApplicationContent";
     public static final String REBUILD_APP_ENV = "rebuildAppEnv";
+    public static final String ASYNC_STEP_EXECUTION_INDEX = "asyncStepExecutionIndex";
+    public static final String VAR_STEP_EXECUTION = "StepExecution";
+    public static final String VAR_STEP_PHASE = "stepPhase";
+    public static final String VAR_UPLOAD_STATE = "uploadState";
 
 }

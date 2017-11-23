@@ -23,12 +23,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.sap.activiti.common.impl.MockDelegateExecution;
-import com.sap.activiti.common.util.GsonHelper;
 import com.sap.cloud.lm.sl.cf.core.cf.services.ServiceOperationType;
 import com.sap.cloud.lm.sl.cf.core.util.Configuration;
 import com.sap.cloud.lm.sl.cf.process.Constants;
 import com.sap.cloud.lm.sl.cf.process.steps.StepsUtil;
+import com.sap.cloud.lm.sl.common.util.JsonUtil;
 import com.sap.cloud.lm.sl.common.util.TestUtil;
 import com.sap.cloud.lm.sl.persistence.model.FileEntry;
 import com.sap.cloud.lm.sl.persistence.services.AbstractFileService;
@@ -50,7 +49,7 @@ public class AnalyticsCollectorTest {
         TRIGGERED_SERVICE_OPERATIONS.put("qux", ServiceOperationType.CREATE);
     }
 
-    protected DelegateExecution context = MockDelegateExecution.createSpyInstance();
+    protected DelegateExecution context = com.sap.cloud.lm.sl.cf.process.mock.MockDelegateExecution.createSpyInstance();
 
     @Mock
     protected AbstractFileService fileService;
@@ -103,9 +102,9 @@ public class AnalyticsCollectorTest {
         when(context.getVariable(Constants.VAR_SUBSCRIPTIONS_TO_CREATE)).thenReturn(mockedListWithObjects(3));
         when(context.getVariable(Constants.VAR_SERVICE_URLS_TO_REGISTER)).thenReturn(mockedListWithObjects(5));
         when(context.getVariable(Constants.VAR_SERVICE_BROKERS_TO_CREATE)).thenReturn(mockedListWithObjects(1));
-        when(context.getVariable(Constants.VAR_TRIGGERED_SERVICE_OPERATIONS)).thenReturn(
-            GsonHelper.getAsBinaryJson(TRIGGERED_SERVICE_OPERATIONS));
-        when(context.getVariable(Constants.VAR_SERVICE_KEYS_TO_CREATE)).thenReturn(GsonHelper.getAsBinaryJson(new Object()));
+        when(context.getVariable(Constants.VAR_TRIGGERED_SERVICE_OPERATIONS))
+            .thenReturn(JsonUtil.getAsBinaryJson(TRIGGERED_SERVICE_OPERATIONS));
+        when(context.getVariable(Constants.VAR_SERVICE_KEYS_TO_CREATE)).thenReturn(JsonUtil.getAsBinaryJson(new Object()));
 
         when(context.getVariable(Constants.VAR_SUBSCRIPTIONS_TO_DELETE)).thenReturn(mockedListWithObjects(2));
         when(context.getVariable(Constants.VAR_DELETED_ENTRIES)).thenReturn(mockedListWithObjects(1));
@@ -120,7 +119,7 @@ public class AnalyticsCollectorTest {
         for (int i = 0; i < size; i++) {
             list.add(new Object());
         }
-        return GsonHelper.getAsBinaryJson(list);
+        return JsonUtil.getAsBinaryJson(list);
     }
 
     private List<String> mockedListWithStrings(int size) {
@@ -136,12 +135,13 @@ public class AnalyticsCollectorTest {
         for (int i = 0; i < size; i++) {
             list.add(new String());
         }
-        return GsonHelper.getAsBinaryJson(list);
+        return JsonUtil.getAsBinaryJson(list);
     }
 
     @Test
     public void collectAttributesDeployTest() throws Exception {
-        when(context.getVariable(com.sap.cloud.lm.sl.persistence.message.Constants.VARIABLE_NAME_SERVICE_ID)).thenReturn(Constants.DEPLOY_SERVICE_ID);
+        when(context.getVariable(com.sap.cloud.lm.sl.persistence.message.Constants.VARIABLE_NAME_SERVICE_ID))
+            .thenReturn(Constants.DEPLOY_SERVICE_ID);
         TestUtil.test(() -> {
             return collector.collectAttributes(context);
         }, "R:AnalyticsDeploy.json", getClass());
@@ -149,7 +149,8 @@ public class AnalyticsCollectorTest {
 
     @Test
     public void collectAttributesUndeployTest() throws Exception {
-        when(context.getVariable(com.sap.cloud.lm.sl.persistence.message.Constants.VARIABLE_NAME_SERVICE_ID)).thenReturn(Constants.UNDEPLOY_SERVICE_ID);
+        when(context.getVariable(com.sap.cloud.lm.sl.persistence.message.Constants.VARIABLE_NAME_SERVICE_ID))
+            .thenReturn(Constants.UNDEPLOY_SERVICE_ID);
         TestUtil.test(() -> {
             return collector.collectAttributes(context);
         }, "R:AnalyticsUndeploy.json", getClass());

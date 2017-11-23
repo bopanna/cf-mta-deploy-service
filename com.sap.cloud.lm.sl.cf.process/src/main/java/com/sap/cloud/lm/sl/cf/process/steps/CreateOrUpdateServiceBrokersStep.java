@@ -16,7 +16,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.sap.activiti.common.ExecutionStatus;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudServiceBrokerExtended;
 import com.sap.cloud.lm.sl.cf.core.cf.PlatformType;
@@ -43,7 +42,7 @@ public class CreateOrUpdateServiceBrokersStep extends SyncActivitiStep {
     private Configuration configuration;
 
     @Override
-    protected ExecutionStatus executeStep(ExecutionWrapper execution) throws SLException {
+    protected StepPhase executeStep(ExecutionWrapper execution) throws SLException {
         getStepLogger().logActivitiTask();
         try {
             getStepLogger().info(Messages.CREATING_SERVICE_BROKERS);
@@ -66,7 +65,7 @@ public class CreateOrUpdateServiceBrokersStep extends SyncActivitiStep {
 
             StepsUtil.setServiceBrokersToCreate(execution.getContext(), serviceBrokersToCreate);
             getStepLogger().debug(Messages.SERVICE_BROKERS_CREATED);
-            return ExecutionStatus.SUCCESS;
+            return StepPhase.DONE;
         } catch (SLException e) {
             getStepLogger().error(e, Messages.ERROR_CREATING_SERVICE_BROKERS);
             throw e;
@@ -142,8 +141,8 @@ public class CreateOrUpdateServiceBrokersStep extends SyncActivitiStep {
         PlatformType platformType = configuration.getPlatformType();
         boolean isSpaceScoped = attributesGetter.getAttribute(SupportedParameters.SERVICE_BROKER_SPACE_SCOPED, Boolean.class, false);
         if (platformType == PlatformType.XS2 && isSpaceScoped) {
-            getStepLogger().warn(
-                MessageFormat.format(Messages.CANNOT_CREATE_SPACE_SCOPED_SERVICE_BROKER_ON_THIS_PLATFORM, serviceBrokerName));
+            getStepLogger()
+                .warn(MessageFormat.format(Messages.CANNOT_CREATE_SPACE_SCOPED_SERVICE_BROKER_ON_THIS_PLATFORM, serviceBrokerName));
             return null;
         }
         return isSpaceScoped ? StepsUtil.getSpaceId(context) : null;
