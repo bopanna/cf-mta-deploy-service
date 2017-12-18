@@ -30,7 +30,7 @@ public class MonitorAppDeploySubProcessStep extends AbstractSubProcessMonitorSte
     }
 
     @Override
-    protected List<String> getProcessVariablesToInject() {
+    protected List<String> getProcessVariablesToInject(DelegateExecution context) {
         return Arrays.asList(Constants.VAR_SERVICE_KEYS_CREDENTIALS_TO_INJECT);
     }
 

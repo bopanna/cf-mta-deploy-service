@@ -41,6 +41,7 @@ public class RebuildApplicationEnvironmentStep extends SyncActivitiStep {
                 mtaModules, deployedModuleNames);
             CloudApplicationExtended app = StepsUtil.getApp(execution.getContext());
             CloudApplicationExtended modifiedApp = findApplication(modifiedApps, app.getName());
+            getStepLogger().info("Modified application {0}", JsonUtil.toJson(modifiedApp, true));
             app.setUris(modifiedApp.getUris());
             app.setIdleUris(modifiedApp.getIdleUris());
             app.setEnv(MapUtil.upcastUnmodifiable(modifiedApp.getEnvAsMap()));

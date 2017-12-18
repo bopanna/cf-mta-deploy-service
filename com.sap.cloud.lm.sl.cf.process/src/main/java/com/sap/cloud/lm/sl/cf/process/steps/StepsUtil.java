@@ -248,7 +248,7 @@ public class StepsUtil {
         context.setVariable(Constants.VAR_PLATFORM, getBinaryJsonForMtaModel().marshal(platform));
     }
 
-    static HandlerFactory getHandlerFactory(DelegateExecution context) {
+    public static HandlerFactory getHandlerFactory(DelegateExecution context) {
         int majorSchemaVersion = (int) context.getVariable(Constants.VAR_MTA_MAJOR_SCHEMA_VERSION);
         int minorSchemaVersion = (int) context.getVariable(Constants.VAR_MTA_MINOR_SCHEMA_VERSION);
         return new HandlerFactory(majorSchemaVersion, minorSchemaVersion);
@@ -387,7 +387,7 @@ public class StepsUtil {
             .collect(Collectors.toList());
     }
 
-    static void setAppsToDeploy(DelegateExecution context, List<CloudApplicationExtended> apps) {
+    public static void setAppsToDeploy(DelegateExecution context, List<CloudApplicationExtended> apps) {
         List<String> cloudApplicationsAsStrings = apps.stream().map(app -> JsonUtil.toJson(app)).collect(Collectors.toList());
         context.setVariable(Constants.VAR_APPS_TO_DEPLOY, cloudApplicationsAsStrings);
     }
@@ -929,6 +929,14 @@ public class StepsUtil {
     public static <T> T getVariable(DelegateExecution context, String name, T defaultValue) {
         T value = (T) context.getVariable(name);
         return (value != null) ? value : defaultValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getVariableOrDefault(DelegateExecution context, String name, T defaultValue) {
+        if (!context.hasVariable(name)) {
+            return defaultValue;
+        }
+        return (T) context.getVariable(name);
     }
 
     public static void setArrayVariable(DelegateExecution context, String name, String[] array) {

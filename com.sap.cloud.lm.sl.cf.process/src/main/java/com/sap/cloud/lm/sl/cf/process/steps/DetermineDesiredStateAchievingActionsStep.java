@@ -69,8 +69,15 @@ public class DetermineDesiredStateAchievingActionsStep extends SyncActivitiStep 
     }
 
     private ActionCalculator getActionsCalculator(DelegateExecution context) {
-        String hasAppChangedString = (String) context.getVariable(Constants.VAR_HAS_APP_CHANGED);
-        return Boolean.valueOf(hasAppChangedString) ? new ChangedApplicationActionCalcultor() : new UnchangedApplicationActionCalculator();
+        boolean hasAppChangedString = determineHasAppChanged(context);
+        return hasAppChangedString ? new ChangedApplicationActionCalcultor() : new UnchangedApplicationActionCalculator();
+    }
+
+    private boolean determineHasAppChanged(DelegateExecution context) {
+        boolean appPropertiesChanged = StepsUtil.getAppPropertiesChanged(context);
+        String appContentChangedString = StepsUtil.getVariableOrDefault(context, Constants.VAR_APP_CONTENT_CHANGED,
+            Boolean.toString(false));
+        return appPropertiesChanged || Boolean.valueOf(appContentChangedString);
     }
 
 }

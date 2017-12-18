@@ -163,9 +163,8 @@ public class UploadAppStep extends TimeoutAsyncActivitiStep {
     }
 
     private void updateContextExtension(DelegateExecution context, boolean appContentChanged) throws SLException {
-        boolean appPropertiesChanged = StepsUtil.getAppPropertiesChanged(context);
-        boolean hasAppChanged = appPropertiesChanged || appContentChanged;
-        contextExtensionDao.addOrUpdate(context.getProcessInstanceId(), Constants.VAR_HAS_APP_CHANGED, Boolean.toString(hasAppChanged));
+        contextExtensionDao.addOrUpdate(context.getProcessInstanceId(), Constants.VAR_APP_CONTENT_CHANGED,
+            Boolean.toString(appContentChanged));
     }
 
     MonitorUploadStatusCallback getMonitorUploadStatusCallback(DelegateExecution context, CloudApplication app, File file) {

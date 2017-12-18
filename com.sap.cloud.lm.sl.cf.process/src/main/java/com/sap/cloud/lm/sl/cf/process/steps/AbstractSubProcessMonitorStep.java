@@ -2,12 +2,11 @@ package com.sap.cloud.lm.sl.cf.process.steps;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.Job;
 
 import com.sap.cloud.lm.sl.cf.core.activiti.ActivitiFacade;
@@ -18,17 +17,18 @@ import com.sap.cloud.lm.sl.cf.process.message.Messages;
 
 public abstract class AbstractSubProcessMonitorStep extends AsyncExecution {
 
-    @Inject
-    private ActivitiFacade activitiFacade;
+    protected ActivitiFacade activitiFacade;
 
     public AbstractSubProcessMonitorStep(ActivitiFacade activitiFacade) {
         this.activitiFacade = activitiFacade;
     }
 
     @Override
-    public AsyncExecutionState execute(ExecutionWrapper execution) {
+    public AsyncExecutionState execute(ExecutionWrapper execution) throws InterruptedException {
+        // TODO: extract this in another class
+        Thread.sleep(10000);
         String subProcessId = StepsUtil.getSubProcessId(execution.getContext());
-        execution.getStepLogger().debug(Messages.STARTING_MONITORING_SUBPROCESS, subProcessId);
+        execution.getStepLogger().info(Messages.STARTING_MONITORING_SUBPROCESS, subProcessId);
         try {
             HistoricProcessInstance subProcess = getSubProcess(execution.getContext(), subProcessId);
             return getSubProcessStatus(subProcess, execution);
@@ -46,6 +46,15 @@ public abstract class AbstractSubProcessMonitorStep extends AsyncExecution {
         throws MonitoringException {
         ErrorType errorType = getSubProcessErrorType(subProcess, execution.getContextExtensionDao());
         execution.getStepLogger().debug(Messages.ERROR_TYPE_OF_SUBPROCESS, subProcess.getId(), errorType);
+
+        Execution subProcessInstanceExecution = activitiFacade.getProcessExecution(subProcess.getId());
+        if (subProcessInstanceExecution != null) {
+            String subProcessActivityType = getSubProcessActivityType(subProcess, subProcessInstanceExecution);
+            if ("receiveTask".equals(subProcessActivityType)) {
+                return suspendProcessInstance(execution);
+            }
+        }
+
         Job executionJob = execution.getContext()
             .getEngineServices()
             .getManagementService()
@@ -62,6 +71,18 @@ public abstract class AbstractSubProcessMonitorStep extends AsyncExecution {
         }
         StepsUtil.setStepPhase(execution, StepPhase.POLL);
         return onError(execution.getContext(), errorType);
+    }
+
+    private AsyncExecutionState suspendProcessInstance(ExecutionWrapper execution) {
+        String processInstanceId = execution.getContext().getProcessInstanceId();
+        activitiFacade.suspendProcessInstance(processInstanceId);
+        StepsUtil.setStepPhase(execution, StepPhase.POLL);
+        return AsyncExecutionState.RUNNING;
+    }
+
+    private String getSubProcessActivityType(HistoricProcessInstance subProcess, Execution subProcessInstanceExecution) {
+        return activitiFacade.getActivityType(subProcess.getId(), subProcessInstanceExecution.getId(),
+            subProcessInstanceExecution.getActivityId());
     }
 
     private AsyncExecutionState getFinishedProcessStatus(HistoricProcessInstance subProcess, ExecutionWrapper execution,
@@ -94,7 +115,7 @@ public abstract class AbstractSubProcessMonitorStep extends AsyncExecution {
 
     private void injectProcessVariablesFromSubProcess(DelegateExecution context) {
         String subProcessId = StepsUtil.getSubProcessId(context);
-        List<String> processVariablesToInject = getProcessVariablesToInject();
+        List<String> processVariablesToInject = getProcessVariablesToInject(context);
         for (String processVariable : processVariablesToInject) {
             HistoricVariableInstance historicVariableInstance = activitiFacade.getHistoricVariableInstance(subProcessId, processVariable);
             if (historicVariableInstance != null) {
@@ -103,6 +124,6 @@ public abstract class AbstractSubProcessMonitorStep extends AsyncExecution {
         }
     }
 
-    protected abstract List<String> getProcessVariablesToInject();
+    protected abstract List<String> getProcessVariablesToInject(DelegateExecution context);
 
 }
