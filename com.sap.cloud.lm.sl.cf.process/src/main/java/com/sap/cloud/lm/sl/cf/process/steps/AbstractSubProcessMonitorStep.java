@@ -33,7 +33,6 @@ public abstract class AbstractSubProcessMonitorStep extends AsyncExecution {
             HistoricProcessInstance subProcess = getSubProcess(execution.getContext(), subProcessId);
             return getSubProcessStatus(subProcess, execution);
         } catch (Exception e) {
-            StepsUtil.setStepPhase(execution, StepPhase.POLL);
             throw new MonitoringException(e, Messages.ERROR_MONITORING_SUBPROCESS, subProcessId);
         }
     }

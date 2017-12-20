@@ -51,11 +51,9 @@ public class PollStartAppStatusExecution extends AsyncExecution {
         } catch (CloudFoundryException cfe) {
             SLException e = StepsUtil.createException(cfe);
             onError(execution, format(Messages.ERROR_STARTING_APP_1, app.getName()), e);
-            StepsUtil.setStepPhase(execution, StepPhase.RETRY);
-            throw e;
+            throw cfe;
         } catch (SLException e) {
             onError(execution, format(Messages.ERROR_STARTING_APP_1, app.getName()), e);
-            StepsUtil.setStepPhase(execution, StepPhase.RETRY);
             throw e;
         }
     }
@@ -136,7 +134,6 @@ public class PollStartAppStatusExecution extends AsyncExecution {
                 setType(execution, StepPhase.RETRY);
                 return AsyncExecutionState.ERROR;
             }
-            // TODO:
             StepsUtil.setStepPhase(execution, StepPhase.POLL);
             return AsyncExecutionState.RUNNING;
         }

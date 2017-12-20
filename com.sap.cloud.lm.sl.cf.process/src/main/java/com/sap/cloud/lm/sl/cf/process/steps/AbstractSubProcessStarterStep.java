@@ -28,12 +28,9 @@ public abstract class AbstractSubProcessStarterStep extends AsyncActivitiStep {
             ProcessInstance subProcessInstance = actvitiFacade.startProcess(userId, getProcessDefinitionKey(), parentProcessVariables);
             StepsUtil.setSubProcessId(execution.getContext(), subProcessInstance.getProcessInstanceId());
 
-            // TODO: decide whether you need this one...
-            StepsUtil.setStepPhase(execution, StepPhase.POLL);
             return StepPhase.POLL;
         } catch (Exception e) {
             getStepLogger().error(e, "Error starting sub-process");
-            StepsUtil.setStepPhase(execution, StepPhase.RETRY);
             throw new SLException(e);
         }
     }

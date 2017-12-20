@@ -38,11 +38,9 @@ public class PollExecuteTaskStatusExecution extends AsyncExecution {
         } catch (CloudFoundryException cfe) {
             SLException e = StepsUtil.createException(cfe);
             execution.getStepLogger().error(e, Messages.ERROR_EXECUTING_TASK_ON_APP, task.getName(), app.getName());
-            StepsUtil.setStepPhase(execution, StepPhase.RETRY);
-            throw e;
+            throw cfe;
         } catch (SLException e) {
             execution.getStepLogger().error(e, Messages.ERROR_EXECUTING_TASK_ON_APP, task.getName(), app.getName());
-            StepsUtil.setStepPhase(execution, StepPhase.RETRY);
             throw e;
         }
     }

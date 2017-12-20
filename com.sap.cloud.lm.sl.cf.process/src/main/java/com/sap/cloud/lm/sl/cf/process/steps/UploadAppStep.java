@@ -42,7 +42,7 @@ import com.sap.cloud.lm.sl.persistence.services.FileStorageException;
 
 @Component("uploadAppStep1")
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class UploadAppStep extends AsyncActivitiStep {
+public class UploadAppStep extends TimeoutAsyncActivitiStep {
 
     private static final String ARCHIVE_FILE_SEPARATOR = "/";
 
@@ -325,4 +325,5 @@ public class UploadAppStep extends AsyncActivitiStep {
     protected List<AsyncExecution> getAsyncStepExecutions() {
         return Arrays.asList(new PollUploadAppStatusExecution());
     }
+
 }

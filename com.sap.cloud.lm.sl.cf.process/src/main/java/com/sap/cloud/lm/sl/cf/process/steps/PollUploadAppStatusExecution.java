@@ -66,13 +66,11 @@ public class PollUploadAppStatusExecution extends AsyncExecution {
             }
         } catch (SLException e) {
             execution.getStepLogger().error(e, Messages.ERROR_CHECKING_UPLOAD_APP_STATUS, app.getName());
-            StepsUtil.setStepPhase(execution, StepPhase.RETRY);
             throw e;
         } catch (CloudFoundryException cfe) {
             SLException e = StepsUtil.createException(cfe);
             execution.getStepLogger().error(e, Messages.ERROR_CHECKING_UPLOAD_APP_STATUS, app.getName());
-            StepsUtil.setStepPhase(execution, StepPhase.RETRY);
-            throw e;
+            throw cfe;
         }
     }
 

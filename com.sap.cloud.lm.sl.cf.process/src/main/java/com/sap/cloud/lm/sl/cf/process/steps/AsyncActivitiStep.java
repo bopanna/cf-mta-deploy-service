@@ -5,6 +5,7 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateExecution;
 
 import com.sap.cloud.lm.sl.cf.process.Constants;
+import com.sap.cloud.lm.sl.common.SLException;
 
 public abstract class AsyncActivitiStep extends SyncActivitiStep {
 
@@ -13,10 +14,6 @@ public abstract class AsyncActivitiStep extends SyncActivitiStep {
     @Override
     protected StepPhase executeStep(ExecutionWrapper execution) throws Exception {
         StepPhase stepPhase = StepsUtil.getStepPhase(execution);
-        if (stepPhase == StepPhase.WAIT) {
-            return StepPhase.WAIT;
-        }
-
         if (stepPhase == StepPhase.POLL) {
             return executeStepExecution(execution);
         }
@@ -47,16 +44,21 @@ public abstract class AsyncActivitiStep extends SyncActivitiStep {
         }
 
         if (stepExecutionState == AsyncExecutionState.ERROR) {
-            return StepPhase.RETRY;
+            throw new SLException("Async execution has failed");
         }
 
         if (stepExecutionState == AsyncExecutionState.RUNNING) {
             return StepPhase.POLL;
         }
-        return determineStepState(execution.getContext(), stepExecutions);
+        return determineStepPhase(execution.getContext(), stepExecutions);
     }
 
-    private StepPhase determineStepState(DelegateExecution context, List<AsyncExecution> stepExecutions) {
+    @Override
+    protected StepPhase getResultStepPhase() {
+        return StepPhase.POLL;
+    }
+
+    private StepPhase determineStepPhase(DelegateExecution context, List<AsyncExecution> stepExecutions) {
         Integer stepExecutionIndex = getStepExecutionIndex(context);
         if (stepExecutionIndex >= stepExecutions.size()) {
             return StepPhase.DONE;

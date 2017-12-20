@@ -22,7 +22,8 @@ public class PollStageAppStatusExecution extends AsyncExecution {
     private RecentLogsRetriever recentLogsRetriever;
     private ApplicationStagingStateGetter applicationStagingStateGetter;
 
-    public PollStageAppStatusExecution(RecentLogsRetriever recentLogsRetriever, ApplicationStagingStateGetter applicationStagingStateGetter) {
+    public PollStageAppStatusExecution(RecentLogsRetriever recentLogsRetriever,
+        ApplicationStagingStateGetter applicationStagingStateGetter) {
         super();
         this.recentLogsRetriever = recentLogsRetriever;
         this.applicationStagingStateGetter = applicationStagingStateGetter;
@@ -48,10 +49,9 @@ public class PollStageAppStatusExecution extends AsyncExecution {
         } catch (CloudFoundryException cfe) {
             SLException e = StepsUtil.createException(cfe);
             execution.getStepLogger().error(e, Messages.ERROR_STAGING_APP_1, app.getName());
-            throw e;
+            throw cfe;
         } catch (SLException e) {
             execution.getStepLogger().error(e, Messages.ERROR_STAGING_APP_1, app.getName());
-            setType(execution, StepPhase.RETRY);
             throw e;
         }
     }
