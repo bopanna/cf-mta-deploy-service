@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
+import com.sap.cloud.lm.sl.cf.client.util.TimeoutExecutor;
 import com.sap.cloud.lm.sl.cf.core.activiti.ActivitiFacade;
 import com.sap.cloud.lm.sl.cf.core.auditlogging.AuditLoggingProvider;
 import com.sap.cloud.lm.sl.cf.core.auditlogging.UserInfoProvider;
@@ -86,7 +87,8 @@ public class BootstrapServlet extends HttpServlet {
     }
 
     protected void initExtras() throws Exception {
-        // Do nothing
+        TimeoutExecutor.getInstance().init(configuration.getXsClientCoreThreads(), configuration.getXsClientMaxThreads(),
+            configuration.getXsClientQueueCapacity(), configuration.getXsClientKeepAlive());
     }
 
     protected void destroyExtras() {
