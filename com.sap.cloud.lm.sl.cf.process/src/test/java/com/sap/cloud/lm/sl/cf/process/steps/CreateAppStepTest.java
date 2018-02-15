@@ -23,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 
-import com.sap.cloud.lm.sl.cf.client.ClientExtensions;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudServiceExtended;
 import com.sap.cloud.lm.sl.cf.core.cf.PlatformType;
@@ -153,6 +152,7 @@ public class CreateAppStepTest extends SyncActivitiStepTest<CreateAppStep> {
 
     private void prepareClient() {
         Mockito.when(configuration.getPlatformType()).thenReturn(stepInput.platform);
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
         for (SimpleService simpleService : stepInput.services) {
             CloudServiceExtended service = simpleService.toCloudServiceExtended();
             if (!service.isOptional()) {
@@ -162,11 +162,8 @@ public class CreateAppStepTest extends SyncActivitiStepTest<CreateAppStep> {
 
         for (String appName : stepInput.bindingErrors.keySet()) {
             String serviceName = stepInput.bindingErrors.get(appName);
-            Mockito
-                .doThrow(new CloudFoundryException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                    "Something happened!"))
-                .when((ClientExtensions) client)
-                .bindService(Mockito.eq(appName), Mockito.eq(serviceName), Mockito.any());
+            Mockito.doThrow(new CloudFoundryException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                "Something happened!")).when(clientExtensions).bindService(Mockito.eq(appName), Mockito.eq(serviceName), Mockito.any());
         }
 
         for (String serviceName : stepInput.existingServiceKeys.keySet()) {

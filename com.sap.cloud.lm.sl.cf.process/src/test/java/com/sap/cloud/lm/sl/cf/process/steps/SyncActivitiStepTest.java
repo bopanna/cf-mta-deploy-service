@@ -53,8 +53,9 @@ public abstract class SyncActivitiStepTest<T extends SyncActivitiStep> {
     protected ContextExtensionDao contextExtensionDao;
     @Mock
     protected AbstractFileService fileService;
-    @Mock(extraInterfaces = ClientExtensions.class)
+    @Mock
     protected CloudFoundryOperations client;
+    @Mock
     protected ClientExtensions clientExtensions;
     @Mock
     protected CloudFoundryClientProvider clientProvider;
@@ -62,6 +63,8 @@ public abstract class SyncActivitiStepTest<T extends SyncActivitiStep> {
     protected ActivitiFacade activitiFacade;
     @Mock
     protected Configuration configuration;
+    @Mock
+    private ExecutionWrapperFactory factory;
 
     protected ExecutionWrapper execution;
     @InjectMocks
@@ -72,19 +75,31 @@ public abstract class SyncActivitiStepTest<T extends SyncActivitiStep> {
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
-        this.clientExtensions = (ClientExtensions) client;
         this.stepLogger = Mockito.spy(new StepLogger(context, progressMessageService, processLoggerProviderFactory, LOGGER));
         when(stepLoggerFactory.create(any(), any(), any(), any())).thenReturn(stepLogger);
         context.setVariable(Constants.VAR_SPACE, SPACE_NAME);
         context.setVariable(Constants.VAR_USER, USER_NAME);
         context.setVariable(Constants.VAR_ORG, ORG_NAME);
-        when(clientProvider.getCloudFoundryClient(anyString(), anyString(), anyString(), anyString())).thenReturn(client);
         context.setVariable("correlationId", getCorrelationId());
         prepareExecution();
     }
 
     private void prepareExecution() {
-        execution = step.createExecutionWrapper(context);
+        execution = Mockito.mock(ExecutionWrapper.class);
+        when(execution.getContext()).thenReturn(context);
+        when(execution.getStepLogger()).thenReturn(stepLogger);
+        when(execution.getCloudFoundryClient()).thenReturn(client);
+        when(execution.getCloudFoundryClientWithoutTimeout()).thenReturn(client);
+        when(execution.getCloudFoundryClient(anyString(), anyString())).thenReturn(client);
+        when(execution.getCloudFoundryClientWithoutTimeout(anyString(), anyString())).thenReturn(client);
+        // when(execution.getClientExtensions()).thenReturn(clientExtensions);
+        // when(execution.getClientExtensionsWithoutTimeout()).thenReturn(clientExtensions);
+        // when(execution.getClientExtensions(anyString(), anyString())).thenReturn(clientExtensions);
+        // when(execution.getClientExtensionsWithoutTimeout(anyString(), anyString())).thenReturn(clientExtensions);
+        when(execution.getProcessLoggerProviderFactory()).thenReturn(processLoggerProviderFactory);
+        when(execution.getContextExtensionDao()).thenReturn(contextExtensionDao);
+
+        when(factory.createExecutionWrapper(any(), any(), any(), any(), any())).thenReturn(execution);
     }
 
     protected void assertStepFinishedSuccessfully() {

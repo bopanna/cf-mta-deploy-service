@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mockito;
 
 import com.google.gson.reflect.TypeToken;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
@@ -101,6 +102,7 @@ public class DeleteIdleRoutesStepTest extends SyncActivitiStepTest<DeleteIdleRou
     }
 
     private void prepareClient() {
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
         for (CloudApplicationExtended app : expectedAppsToDeploy) {
             CloudApplicationExtended existingApp = new CloudApplicationExtended(null, app.getName());
             List<String> existingUris = new ArrayList<>(app.getUris());

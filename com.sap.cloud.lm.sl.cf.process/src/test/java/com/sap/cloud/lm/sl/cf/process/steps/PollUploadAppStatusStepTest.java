@@ -1,7 +1,6 @@
 package com.sap.cloud.lm.sl.cf.process.steps;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +15,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 
 import com.sap.cloud.lm.sl.cf.client.lib.domain.UploadInfo;
@@ -121,9 +121,10 @@ public class PollUploadAppStatusStepTest extends AsyncStepOperationTest<UploadAp
 
     private void prepareClient() {
         if (!supportsExtensions) {
-            when(clientProvider.getCloudFoundryClient(anyString(), anyString(), anyString(), anyString())).thenReturn(null);
+            Mockito.when(execution.getClientExtensions()).thenReturn(null);
             return;
         }
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
         if (expectedCfExceptionMessage != null) {
             when(clientExtensions.getUploadProgress(UPLOAD_TOKEN)).thenThrow(CFEXCEPTION);
         } else {

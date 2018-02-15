@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.cloudfoundry.client.lib.CloudFoundryOperations;
 import org.cloudfoundry.client.lib.domain.CloudInfo;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -27,6 +28,11 @@ public class PrepareToExecuteTasksStepTest extends SyncActivitiStepTest<PrepareT
     @Override
     protected PrepareToExecuteTasksStep createStep() {
         return new PrepareToExecuteTasksStep();
+    }
+
+    @Before
+    public void prepare() {
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
     }
 
     @Test

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -20,7 +19,6 @@ import java.util.Arrays;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.cloudfoundry.client.lib.CloudFoundryException;
-import org.cloudfoundry.client.lib.CloudFoundryOperations;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,6 +65,7 @@ public class UploadAppStepTest {
         public void setUp() throws Exception {
             StepsTestUtil.mockApplicationsToDeploy(Arrays.asList(new SimpleApplication(APP_NAME, 2).toCloudApplication()), context);
             context.setVariable(Constants.VAR_APPS_INDEX, 0);
+            Mockito.when(execution.getClientExtensions(ORG_NAME, SPACE_NAME)).thenReturn(clientExtensions);
         }
 
         @Test
@@ -79,8 +78,6 @@ public class UploadAppStepTest {
 
         @Test(expected = SLException.class)
         public void testPollStatus2() throws Exception {
-            when(clientProvider.getCloudFoundryClient(eq(USER_NAME), eq(ORG_NAME), eq(SPACE_NAME), anyString()))
-                .thenThrow(new SLException(new CloudFoundryException(HttpStatus.BAD_REQUEST)));
             step.execute(context);
         }
 
@@ -99,10 +96,6 @@ public class UploadAppStepTest {
         public TemporaryFolder tempDir = new TemporaryFolder();
         @Rule
         public ExpectedException expectedException = ExpectedException.none();
-        @Mock
-        private ClientExtensions cfExtensions;
-        @Mock
-        private CloudFoundryOperations client;
 
         @Parameters
         public static Iterable<Object[]> getParameters() {
@@ -159,12 +152,12 @@ public class UploadAppStepTest {
 
         @Test
         public void test() {
+            ClientExtensions extensions = clientExtensions;
             if (!clientSupportsExtensions) {
-                cfExtensions = null;
+                extensions = null;
             }
-            ExecutionWrapper wrapper = step.createExecutionWrapper(context);
-            Runnable uploader = step.getUploadAppStepRunnable(wrapper, new SimpleApplication(APP_NAME, 2).toCloudApplication(), client,
-                cfExtensions);
+            Runnable uploader = step.getUploadAppStepRunnable(execution, new SimpleApplication(APP_NAME, 2).toCloudApplication(), client,
+                extensions);
             try {
                 uploader.run();
             } catch (Throwable e) {
@@ -205,12 +198,13 @@ public class UploadAppStepTest {
 
         public void prepareClients() throws Exception {
             if (clientSupportsExtensions) {
+                Mockito.when(execution.getClientExtensionsWithoutTimeout()).thenReturn(clientExtensions);
                 if (expectedIOExceptionMessage == null && expectedCFExceptionMessage == null) {
-                    when(cfExtensions.asynchUploadApplication(eq(APP_NAME), eq(appFile), any())).thenReturn(TOKEN);
+                    when(clientExtensions.asynchUploadApplication(eq(APP_NAME), eq(appFile), any())).thenReturn(TOKEN);
                 } else if (expectedIOExceptionMessage != null) {
-                    when(cfExtensions.asynchUploadApplication(eq(APP_NAME), eq(appFile), any())).thenThrow(IO_EXCEPTION);
+                    when(clientExtensions.asynchUploadApplication(eq(APP_NAME), eq(appFile), any())).thenThrow(IO_EXCEPTION);
                 } else if (expectedCFExceptionMessage != null) {
-                    when(cfExtensions.asynchUploadApplication(eq(APP_NAME), eq(appFile), any())).thenThrow(CF_EXCEPTION);
+                    when(clientExtensions.asynchUploadApplication(eq(APP_NAME), eq(appFile), any())).thenThrow(CF_EXCEPTION);
                 }
             } else {
                 if (expectedIOExceptionMessage != null) {
@@ -245,11 +239,13 @@ public class UploadAppStepTest {
             }
 
             @Override
-            InputStreamProducer getInputStreamProducer(InputStream appArchiveStream, String fileName, long maxStreamSize) throws SLException {
+            InputStreamProducer getInputStreamProducer(InputStream appArchiveStream, String fileName, long maxStreamSize)
+                throws SLException {
                 if (!fileName.equals(APP_FILE)) {
                     return super.getInputStreamProducer(appArchiveStream, fileName, maxStreamSize);
                 }
-                return new InputStreamProducer(getClass().getResourceAsStream(APP_FILE), fileName, Configuration.getInstance().getMaxResourceFileSize()) {
+                return new InputStreamProducer(getClass().getResourceAsStream(APP_FILE), fileName,
+                    Configuration.getInstance().getMaxResourceFileSize()) {
                     @Override
                     public InputStream getNextInputStream() {
                         return getClass().getResourceAsStream(APP_FILE);

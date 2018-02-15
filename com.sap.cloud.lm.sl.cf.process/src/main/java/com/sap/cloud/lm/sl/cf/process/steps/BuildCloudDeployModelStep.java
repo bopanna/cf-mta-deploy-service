@@ -86,7 +86,7 @@ public class BuildCloudDeployModelStep extends SyncActivitiStep {
             List<CloudServiceExtended> servicesToCreate = allServices.stream()
                 .filter(service -> service.isManaged())
                 .collect(Collectors.toList());
-            getStepLogger().debug(Messages.SERVICES_TO_CREATE, secureSerializer.toJson(servicesToCreate));
+            getStepLogger().info(Messages.SERVICES_TO_CREATE, secureSerializer.toJson(servicesToCreate));
             StepsUtil.setServicesToCreate(execution.getContext(), servicesToCreate);
 
             // Needed by CreateOrUpdateServicesStep, as it is used as an iteration variable:

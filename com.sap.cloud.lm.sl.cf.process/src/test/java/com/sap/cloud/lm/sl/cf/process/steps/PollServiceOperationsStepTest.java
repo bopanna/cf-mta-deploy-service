@@ -1,8 +1,6 @@
 package com.sap.cloud.lm.sl.cf.process.steps;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -10,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.cloudfoundry.client.lib.CloudFoundryOperations;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
@@ -89,8 +86,6 @@ public class PollServiceOperationsStepTest extends AsyncStepOperationTest<Create
 
     @Mock
     private ServiceInstanceGetter serviceInstanceGetter;
-    @Mock
-    protected CloudFoundryOperations client;
     @Rule
     public ExpectedException exception = ExpectedException.none();
     private StepInput input;
@@ -106,7 +101,6 @@ public class PollServiceOperationsStepTest extends AsyncStepOperationTest<Create
             exception.expectMessage(expectedExceptionMessage);
         }
         context.setVariable(Constants.VAR_SERVICES_TO_CREATE_COUNT, 0);
-        when(clientProvider.getCloudFoundryClient(anyString(), anyString(), anyString(), anyString())).thenReturn(client);
     }
 
     @SuppressWarnings("unchecked")

@@ -48,6 +48,8 @@ public class ReserveRoutesStepTest extends SyncActivitiStepTest<ReserveRoutesSte
     @Before
     public void setUp() throws Exception {
         prepareContext();
+
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
     }
 
     private void prepareContext() {

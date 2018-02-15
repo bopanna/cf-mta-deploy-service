@@ -63,6 +63,7 @@ public class UnregisterServiceUrlsStepTest extends SyncActivitiStepTest<Unregist
     public void setUp() throws Exception {
         loadParameters();
         prepareContext();
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
     }
 
     private void loadParameters() throws Exception {

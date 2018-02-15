@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudTask;
@@ -111,6 +112,7 @@ public class PollExecuteTaskStatusStepTest extends AsyncStepOperationTest<Execut
     private void prepareClientExtensions() {
         CloudTask taskWithState = StepsTestUtil.copy(task);
         taskWithState.setState(currentTaskState);
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
         when(clientExtensions.getTasks(APPLICATION_NAME)).thenReturn(Arrays.asList(taskWithState));
     }
 

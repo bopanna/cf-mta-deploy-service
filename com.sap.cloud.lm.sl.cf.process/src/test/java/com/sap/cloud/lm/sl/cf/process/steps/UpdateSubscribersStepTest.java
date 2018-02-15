@@ -2,7 +2,6 @@ package com.sap.cloud.lm.sl.cf.process.steps;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -112,9 +111,6 @@ public class UpdateSubscribersStepTest extends SyncActivitiStepTest<UpdateSubscr
     @Mock
     private ConfigurationEntryDao entriesDao;
 
-    @Mock
-    private CloudFoundryOperations clientForCurrentSpace;
-
     private String expectedExceptionMessage;
 
     private int majorSchemaVersion;
@@ -191,7 +187,7 @@ public class UpdateSubscribersStepTest extends SyncActivitiStepTest<UpdateSubscr
     }
 
     private void prepareClients() throws Exception {
-        prepareClientProvider(input.currentSpace, clientForCurrentSpace);
+        prepareClientProvider(input.currentSpace, null);
         clients = createClientsForSpacesOfSubscribedApps();
         for (CloudSpace space : clients.keySet()) {
             prepareClientProvider(space, clients.get(space));
@@ -201,7 +197,7 @@ public class UpdateSubscribersStepTest extends SyncActivitiStepTest<UpdateSubscr
     private void prepareClientProvider(CloudSpace space, CloudFoundryOperations clientMock) throws Exception {
         String orgName = space.getOrganization().getName();
         String spaceName = space.getName();
-        when(clientProvider.getCloudFoundryClient(eq(USER), eq(orgName), eq(spaceName), anyString())).thenReturn(clientMock);
+        Mockito.when(execution.getClientExtensions(orgName, spaceName)).thenReturn(clientExtensions);
     }
 
     private Map<CloudSpace, CloudFoundryOperations> createClientsForSpacesOfSubscribedApps() {

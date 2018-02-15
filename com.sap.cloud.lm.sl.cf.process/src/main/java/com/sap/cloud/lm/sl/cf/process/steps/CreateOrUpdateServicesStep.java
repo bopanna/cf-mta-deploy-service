@@ -78,14 +78,15 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
             execution.getStepLogger().info(Messages.CREATING_OR_UPDATING_SERVICES);
 
             CloudFoundryOperations client = execution.getCloudFoundryClient();
-            Map<String, List<String>> defaultTags = computeDefaultTags(client);
-            getStepLogger().debug("Default tags: " + JsonUtil.toJson(defaultTags, true));
+            Map<String, List<String>> defaultTags = computeDefaultTags(execution.getClientExtensions());
+            getStepLogger().info("Default tags: " + JsonUtil.toJson(defaultTags, true));
 
             List<CloudService> existingServices = client.getServices();
             Map<String, CloudService> existingServicesMap = getServicesMap(existingServices);
-            getStepLogger().debug("Existing services: " + existingServicesMap.keySet());
+            getStepLogger().info("Existing services: " + existingServicesMap.keySet());
 
             List<CloudServiceExtended> services = StepsUtil.getServicesToCreate(execution.getContext());
+            execution.getStepLogger().info("Services to create " + JsonUtil.toJson(services, true));
             Map<String, List<ServiceKey>> serviceKeys = StepsUtil.getServiceKeysToCreate(execution.getContext());
 
             Map<String, ServiceOperationType> triggeredServiceOperations = createOrUpdateServices(execution, client, services,
@@ -134,6 +135,7 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
         // TODO: Do not use client extensions when the CF Java Client we use supports managing of
         // service keys.
         ClientExtensions clientExtensions = execution.getClientExtensions();
+        getStepLogger().info("Will try to create service keys with client extensions " + clientExtensions);
         if (clientExtensions == null) {
             return;
         }
@@ -360,14 +362,13 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
 
     }
 
-    private Map<String, List<String>> computeDefaultTags(CloudFoundryOperations client) {
-        if (!(client instanceof ClientExtensions)) {
+    private Map<String, List<String>> computeDefaultTags(ClientExtensions clientExtensions) {
+        if (clientExtensions == null) {
             return Collections.emptyMap();
         }
 
-        ClientExtensions extendedClient = (ClientExtensions) client;
         Map<String, List<String>> defaultTags = new HashMap<>();
-        for (CloudServiceOfferingExtended serviceOffering : extendedClient.getExtendedServiceOfferings()) {
+        for (CloudServiceOfferingExtended serviceOffering : clientExtensions.getExtendedServiceOfferings()) {
             defaultTags.put(serviceOffering.getLabel(), serviceOffering.getTags());
         }
         return defaultTags;

@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudTask;
@@ -27,6 +28,7 @@ public class ExecuteTaskStepTest extends SyncActivitiStepTest<ExecuteTaskStep> {
         step.currentTimeSupplier = () -> DUMMY_TIME;
         task.setCommand("echo ${test}");
         task.setEnvironmentVariables(MapUtil.asMap("test", "bar"));
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
     }
 
     @Test

@@ -37,6 +37,8 @@ public abstract class SyncActivitiStep implements StepIndexProvider, JavaDelegat
     @Inject
     @Named("fileService")
     protected AbstractFileService fileService;
+    @Inject
+    private ExecutionWrapperFactory executionWrapperFactory;
     protected ProcessStepHelper stepHelper;
     private StepLogger stepLogger;
 
@@ -73,7 +75,8 @@ public abstract class SyncActivitiStep implements StepIndexProvider, JavaDelegat
     }
 
     protected ExecutionWrapper createExecutionWrapper(DelegateExecution context) {
-        return new ExecutionWrapper(context, contextExtensionDao, stepLogger, clientProvider, processLoggerProviderFactory);
+        return executionWrapperFactory.createExecutionWrapper(context, contextExtensionDao, stepLogger, clientProvider,
+            processLoggerProviderFactory);
     }
 
     private void handleException(DelegateExecution context, Throwable t) throws Exception {

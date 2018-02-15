@@ -82,6 +82,7 @@ public class UndeployAppStepTest extends SyncActivitiStepTest<UndeployAppStep> {
         prepareContext();
         prepareClient();
         Mockito.when(oneOffTasksSupportChecker.areOneOffTasksSupported(client)).thenReturn(!stepInput.tasksPerApplication.isEmpty());
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
     }
 
     @Test

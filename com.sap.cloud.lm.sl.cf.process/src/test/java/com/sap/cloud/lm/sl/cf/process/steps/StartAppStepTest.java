@@ -19,6 +19,7 @@ public class StartAppStepTest extends SyncActivitiStepTest<StartAppStep> {
     @Before
     public void setUp() {
         context.setVariable(Constants.VAR_APPS_INDEX, 0);
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
     }
 
     @Test

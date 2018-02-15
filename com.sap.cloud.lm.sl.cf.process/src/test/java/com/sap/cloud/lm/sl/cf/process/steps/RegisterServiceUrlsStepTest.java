@@ -61,6 +61,7 @@ public class RegisterServiceUrlsStepTest extends SyncActivitiStepTest<RegisterSe
     public void setUp() throws Exception {
         loadParameters();
         prepareContext();
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
     }
 
     @Test

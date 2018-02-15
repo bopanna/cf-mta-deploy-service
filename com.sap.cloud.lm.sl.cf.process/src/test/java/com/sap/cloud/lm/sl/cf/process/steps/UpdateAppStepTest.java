@@ -206,6 +206,7 @@ public class UpdateAppStepTest extends SyncActivitiStepTest<UpdateAppStep> {
     }
 
     private void prepareClient() {
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
         prepareDiscontinuedServices();
 
         prepareServicesToBind();

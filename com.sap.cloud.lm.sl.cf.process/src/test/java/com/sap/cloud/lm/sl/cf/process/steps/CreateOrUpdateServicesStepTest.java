@@ -176,6 +176,7 @@ public class CreateOrUpdateServicesStepTest extends SyncActivitiStepTest<CreateO
         for (String serviceName : existingServiceKeys.keySet()) {
             Mockito.when(client.getServiceKeys(serviceName)).thenReturn(existingServiceKeys.get(serviceName));
         }
+        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
         Mockito.doNothing().when(clientExtensions).deleteServiceKey(Mockito.any(), Mockito.any());
         Mockito.when(clientExtensions.createServiceKey(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(null);
     }
