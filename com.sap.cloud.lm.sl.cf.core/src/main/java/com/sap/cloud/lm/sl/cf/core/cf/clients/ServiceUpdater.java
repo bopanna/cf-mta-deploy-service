@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
+import com.sap.cloud.lm.sl.cf.core.cf.clients.factory.CloudfoundryClientWithTimeoutFactory;
+
 public class ServiceUpdater extends CloudServiceOperator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceUpdater.class);
@@ -23,23 +25,24 @@ public class ServiceUpdater extends CloudServiceOperator {
     private static final String ACCEPTS_INCOMPLETE_TRUE = "?accepts_incomplete=true";
     private static final String SERVICE_PARAMETERS = "parameters";
 
-    public void updateServicePlanQuietly(CloudFoundryOperations client, String serviceName, String servicePlan) {
-        ignoreBadGatewayErrors(() -> updateServicePlan(client, serviceName, servicePlan));
+    public void updateServicePlanQuietly(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName, String servicePlan) {
+        ignoreBadGatewayErrors(() -> updateServicePlan(clientsFactory, serviceName, servicePlan));
     }
 
-    public void updateServicePlan(CloudFoundryOperations client, String serviceName, String servicePlan) {
-        new CustomControllerClientErrorHandler().handleErrors(() -> attemptToUpdateServicePlan(client, serviceName, servicePlan));
+    public void updateServicePlan(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName, String servicePlan) {
+        new CustomControllerClientErrorHandler().handleErrors(() -> attemptToUpdateServicePlan(clientsFactory, serviceName, servicePlan));
     }
 
-    public void updateServiceTagsQuietly(CloudFoundryOperations client, String serviceName, List<String> serviceTags) {
-        ignoreBadGatewayErrors(() -> updateServiceTags(client, serviceName, serviceTags));
+    public void updateServiceTagsQuietly(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName, List<String> serviceTags) {
+        ignoreBadGatewayErrors(() -> updateServiceTags(clientsFactory, serviceName, serviceTags));
     }
 
-    public void updateServiceTags(CloudFoundryOperations client, String serviceName, List<String> serviceTags) {
-        new CustomControllerClientErrorHandler().handleErrors(() -> attemptToUpdateServiceTags(client, serviceName, serviceTags));
+    public void updateServiceTags(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName, List<String> serviceTags) {
+        new CustomControllerClientErrorHandler().handleErrors(() -> attemptToUpdateServiceTags(clientsFactory, serviceName, serviceTags));
     }
 
-    private void attemptToUpdateServicePlan(CloudFoundryOperations client, String serviceName, String servicePlan) {
+    private void attemptToUpdateServicePlan(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName, String servicePlan) {
+        CloudFoundryOperations client = clientsFactory.getCloudFoundryClient();
         CloudService service = client.getService(serviceName);
 
         RestTemplate restTemplate = getRestTemplate(client);
@@ -49,24 +52,29 @@ public class ServiceUpdater extends CloudServiceOperator {
         attemptToUpdateServiceParameter(client, serviceName, SERVICE_INSTANCES_URL, SERVICE_PLAN_GUID, servicePlanGuid);
     }
 
-    private void attemptToUpdateServiceTags(CloudFoundryOperations client, String serviceName, List<String> serviceTags) {
-        attemptToUpdateServiceParameter(client, serviceName, SERVICE_INSTANCES_URL, SERVICE_TAGS, serviceTags);
+    private void attemptToUpdateServiceTags(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName,
+        List<String> serviceTags) {
+        attemptToUpdateServiceParameter(clientsFactory.getCloudFoundryClient(), serviceName, SERVICE_INSTANCES_URL, SERVICE_TAGS,
+            serviceTags);
     }
 
     private String getCloudControllerUrl(CloudFoundryOperations client) {
         return client.getCloudControllerUrl().toString();
     }
 
-    public void updateServiceParametersQuietly(CloudFoundryOperations client, String serviceName, Map<String, Object> parameters) {
-        ignoreBadGatewayErrors(() -> updateServiceParameters(client, serviceName, parameters));
+    public void updateServiceParametersQuietly(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName,
+        Map<String, Object> parameters) {
+        ignoreBadGatewayErrors(() -> updateServiceParameters(clientsFactory, serviceName, parameters));
     }
 
-    public void updateServiceParameters(CloudFoundryOperations client, String serviceName, Map<String, Object> parameters) {
-        new CustomControllerClientErrorHandler().handleErrors(() -> attemptToUpdateServiceParameters(client, serviceName, parameters));
+    public void updateServiceParameters(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName, Map<String, Object> parameters) {
+        new CustomControllerClientErrorHandler().handleErrors(() -> attemptToUpdateServiceParameters(clientsFactory, serviceName, parameters));
     }
 
-    private void attemptToUpdateServiceParameters(CloudFoundryOperations client, String serviceName, Map<String, Object> parameters) {
+    private void attemptToUpdateServiceParameters(CloudfoundryClientWithTimeoutFactory clientsFactory, String serviceName,
+        Map<String, Object> parameters) {
         assertServiceAttributes(serviceName, parameters);
+        CloudFoundryOperations client = clientsFactory.getCloudFoundryClient();
         CloudService service = client.getService(serviceName);
 
         if (service.isUserProvided()) {

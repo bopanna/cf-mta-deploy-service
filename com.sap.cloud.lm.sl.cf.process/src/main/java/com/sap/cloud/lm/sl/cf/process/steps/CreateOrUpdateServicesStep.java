@@ -37,6 +37,7 @@ import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudServiceOfferingExtended;
 import com.sap.cloud.lm.sl.cf.core.cf.clients.ServiceCreator;
 import com.sap.cloud.lm.sl.cf.core.cf.clients.ServiceInstanceGetter;
 import com.sap.cloud.lm.sl.cf.core.cf.clients.ServiceUpdater;
+import com.sap.cloud.lm.sl.cf.core.cf.clients.factory.CloudfoundryClientWithTimeoutFactory;
 import com.sap.cloud.lm.sl.cf.core.cf.services.ServiceOperationType;
 import com.sap.cloud.lm.sl.cf.core.security.serialization.SecureSerializationFacade;
 import com.sap.cloud.lm.sl.cf.core.util.Configuration;
@@ -134,7 +135,7 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
         CloudFoundryOperations client, ExecutionWrapper execution) throws SLException {
         // TODO: Do not use client extensions when the CF Java Client we use supports managing of
         // service keys.
-        ClientExtensions clientExtensions = execution.getClientExtensions();
+        ClientExtensions clientExtensions = execution.getClientExtensionsWithoutTimeout();
         getStepLogger().info("Will try to create service keys with client extensions " + clientExtensions);
         if (clientExtensions == null) {
             return;
@@ -259,18 +260,18 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
         }
         ServiceOperationType type = null;
         if (actions.contains(ServiceAction.ACTION_UPDATE_SERVICE_PLAN)) {
-            serviceOperationExecutor.executeServiceOperation(service, () -> updateServicePlan(execution.getContext(), client, service),
-                getStepLogger());
+            serviceOperationExecutor.executeServiceOperation(service,
+                () -> updateServicePlan(execution.getContext(), execution.getTimeoutClientsFactory(), service), getStepLogger());
             type = ServiceOperationType.UPDATE;
         }
 
         if (actions.contains(ServiceAction.ACTION_UPDATE_CREDENTIALS)) {
             serviceOperationExecutor.executeServiceOperation(service,
-                () -> updateServiceCredentials(execution.getContext(), client, service), getStepLogger());
+                () -> updateServiceCredentials(execution.getContext(), execution.getTimeoutClientsFactory(), service), getStepLogger());
             type = ServiceOperationType.UPDATE;
         }
         if (actions.contains(ServiceAction.ACTION_UPDATE_TAGS)) {
-            serviceOperationExecutor.executeServiceOperation(service, () -> updateServiceTags(execution, client, service), getStepLogger());
+            serviceOperationExecutor.executeServiceOperation(service, () -> updateServiceTags(execution, service), getStepLogger());
             type = ServiceOperationType.UPDATE;
         }
 
@@ -281,13 +282,14 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
         return type;
     }
 
-    private void updateServicePlan(DelegateExecution context, CloudFoundryOperations client, CloudServiceExtended service) {
+    private void updateServicePlan(DelegateExecution context, CloudfoundryClientWithTimeoutFactory clientsFactory,
+        CloudServiceExtended service) {
         getStepLogger()
             .debug(MessageFormat.format("Updating service plan of a service {0} with new plan: {1}", service.getName(), service.getPlan()));
         if (service.shouldIgnoreUpdateErrors()) {
-            serviceUpdater.updateServicePlanQuietly(client, service.getName(), service.getPlan());
+            serviceUpdater.updateServicePlanQuietly(clientsFactory, service.getName(), service.getPlan());
         } else {
-            serviceUpdater.updateServicePlan(client, service.getName(), service.getPlan());
+            serviceUpdater.updateServicePlan(clientsFactory, service.getName(), service.getPlan());
         }
     }
 
@@ -344,8 +346,7 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
         getStepLogger().debug(Messages.SERVICE_CREATED, service.getName());
     }
 
-    private void updateServiceTags(ExecutionWrapper execution, CloudFoundryOperations client, CloudServiceExtended service)
-        throws SLException {
+    private void updateServiceTags(ExecutionWrapper execution, CloudServiceExtended service) throws SLException {
         // TODO: Remove the service.isUserProvided() check when user provided services support tags.
         // See the following issue for more info:
         // https://www.pivotaltracker.com/n/projects/966314/stories/105674948
@@ -354,9 +355,9 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
         }
         getStepLogger().info(Messages.UPDATING_SERVICE_TAGS, service.getName());
         if (service.shouldIgnoreUpdateErrors()) {
-            serviceUpdater.updateServiceTagsQuietly(client, service.getName(), service.getTags());
+            serviceUpdater.updateServiceTagsQuietly(execution.getTimeoutClientsFactory(), service.getName(), service.getTags());
         } else {
-            serviceUpdater.updateServiceTags(client, service.getName(), service.getTags());
+            serviceUpdater.updateServiceTags(execution.getTimeoutClientsFactory(), service.getName(), service.getTags());
         }
         getStepLogger().debug(Messages.SERVICE_TAGS_UPDATED, service.getName());
 
@@ -374,13 +375,13 @@ public class CreateOrUpdateServicesStep extends AsyncActivitiStep {
         return defaultTags;
     }
 
-    private void updateServiceCredentials(DelegateExecution context, CloudFoundryOperations client, CloudServiceExtended service)
-        throws SLException {
+    private void updateServiceCredentials(DelegateExecution context, CloudfoundryClientWithTimeoutFactory clientsFactory,
+        CloudServiceExtended service) throws SLException {
         getStepLogger().info(Messages.UPDATING_SERVICE, service.getName());
         if (service.shouldIgnoreUpdateErrors()) {
-            serviceUpdater.updateServiceParametersQuietly(client, service.getName(), service.getCredentials());
+            serviceUpdater.updateServiceParametersQuietly(clientsFactory, service.getName(), service.getCredentials());
         } else {
-            serviceUpdater.updateServiceParameters(client, service.getName(), service.getCredentials());
+            serviceUpdater.updateServiceParameters(clientsFactory, service.getName(), service.getCredentials());
         }
         getStepLogger().debug(Messages.SERVICE_UPDATED, service.getName());
     }

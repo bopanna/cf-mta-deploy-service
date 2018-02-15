@@ -108,7 +108,7 @@ public class UpdateSubscribersStep extends SyncActivitiStep {
             List<ConfigurationEntry> deletedEntries = StepsUtil.getDeletedEntriesFromAllProcesses(execution.getContext(), activitiFacade);
             List<ConfigurationEntry> updatedEntries = merge(publishedEntries, deletedEntries);
 
-            CloudFoundryOperations clientForCurrentSpace = execution.getCloudFoundryClient();
+            CloudFoundryOperations clientForCurrentSpace = execution.getCloudFoundryClientWithoutTimeout();
 
             List<CloudApplication> updatedSubscribers = new ArrayList<>();
             List<CloudApplication> updatedServiceBrokerSubscribers = new ArrayList<>();

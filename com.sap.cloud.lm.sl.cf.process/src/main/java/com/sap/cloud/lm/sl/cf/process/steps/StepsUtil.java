@@ -29,14 +29,12 @@ import org.slf4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.sap.cloud.lm.sl.cf.client.ClientExtensions;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudServiceBrokerExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudServiceExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudTask;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.ServiceUrl;
 import com.sap.cloud.lm.sl.cf.core.activiti.ActivitiFacade;
-import com.sap.cloud.lm.sl.cf.core.cf.CloudFoundryClientProvider;
 import com.sap.cloud.lm.sl.cf.core.cf.HandlerFactory;
 import com.sap.cloud.lm.sl.cf.core.cf.apps.ApplicationStateAction;
 import com.sap.cloud.lm.sl.cf.core.cf.clients.RecentLogsRetriever;
@@ -73,36 +71,6 @@ public class StepsUtil {
     private static org.apache.log4j.Logger getAppLogger(DelegateExecution context, String appName,
         ProcessLoggerProviderFactory processLoggerProviderFactory) {
         return processLoggerProviderFactory.getLoggerProvider(appName).getLogger(getCorrelationId(context), PARENT_LOGGER, appName);
-    }
-
-    static CloudFoundryOperations getCloudFoundryClient(DelegateExecution context, CloudFoundryClientProvider clientProvider,
-        StepLogger stepLogger) throws SLException {
-        return getCloudFoundryClient(context, clientProvider, stepLogger, getOrg(context), getSpace(context));
-    }
-
-    static CloudFoundryOperations getCloudFoundryClient(DelegateExecution context, CloudFoundryClientProvider clientProvider,
-        StepLogger stepLogger, String org, String space) throws SLException {
-        // Determine the current user
-        String userName = determineCurrentUser(context, stepLogger);
-        return clientProvider.getCloudFoundryClient(userName, org, space, context.getProcessInstanceId());
-    }
-
-    static ClientExtensions getClientExtensions(DelegateExecution context, CloudFoundryClientProvider clientProvider, StepLogger stepLogger)
-        throws SLException {
-        CloudFoundryOperations cloudFoundryClient = StepsUtil.getCloudFoundryClient(context, clientProvider, stepLogger);
-        if (cloudFoundryClient instanceof ClientExtensions) {
-            return (ClientExtensions) cloudFoundryClient;
-        }
-        return null;
-    }
-
-    static ClientExtensions getClientExtensions(DelegateExecution context, CloudFoundryClientProvider clientProvider, StepLogger stepLogger,
-        String org, String space) throws SLException {
-        CloudFoundryOperations cloudFoundryClient = StepsUtil.getCloudFoundryClient(context, clientProvider, stepLogger, org, space);
-        if (cloudFoundryClient instanceof ClientExtensions) {
-            return (ClientExtensions) cloudFoundryClient;
-        }
-        return null;
     }
 
     public static String determineCurrentUser(DelegateExecution context, StepLogger stepLogger) throws SLException {

@@ -53,8 +53,6 @@ public class ProcessDescriptorStep extends SyncActivitiStep {
         try {
             getStepLogger().debug(Messages.RESOLVING_DESCRIPTOR_PROPERTIES);
 
-            CloudFoundryOperations client = execution.getCloudFoundryClient();
-
             HandlerFactory handlerFactory = StepsUtil.getHandlerFactory(execution.getContext());
             Target target = StepsUtil.getTarget(execution.getContext());
             Platform platform = StepsUtil.getPlatform(execution.getContext());
@@ -62,7 +60,8 @@ public class ProcessDescriptorStep extends SyncActivitiStep {
             platform.accept(resourceHelper);
             getStepLogger().debug(Messages.TARGET, target);
             MtaDescriptorPropertiesResolver resolver = getMtaDescriptorPropertiesResolver(handlerFactory, platform, target,
-                StepsUtil.getSystemParameters(execution.getContext()), configurationEntryDao, getSpaceIdSupplier(client),
+                StepsUtil.getSystemParameters(execution.getContext()), configurationEntryDao,
+                getSpaceIdSupplier(execution.getCloudFoundryClientWithoutTimeout()),
                 new CloudTarget(StepsUtil.getOrg(execution.getContext()), StepsUtil.getSpace(execution.getContext())));
 
             DeploymentDescriptor descriptor = resolver.resolve(StepsUtil.getUnresolvedDeploymentDescriptor(execution.getContext()));

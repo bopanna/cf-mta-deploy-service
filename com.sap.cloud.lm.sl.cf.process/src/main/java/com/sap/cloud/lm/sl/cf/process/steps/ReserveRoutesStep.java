@@ -38,7 +38,7 @@ public class ReserveRoutesStep extends SyncActivitiStep {
             Set<Integer> allocatedPorts = StepsUtil.getAllocatedPorts(execution.getContext());
             getStepLogger().debug(Messages.ALLOCATED_PORTS, allocatedPorts);
             List<String> domains = app.getDomains();
-            ClientExtensions clientExtended = (ClientExtensions) client;
+            ClientExtensions clientExtended = execution.getClientExtensions();
 
             for (ApplicationPort applicationPort : app.getApplicationPorts()) {
                 if (shouldReserveTcpPort(allocatedPorts, applicationPort)) {

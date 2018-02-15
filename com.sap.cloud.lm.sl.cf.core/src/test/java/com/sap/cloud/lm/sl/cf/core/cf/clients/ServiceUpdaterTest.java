@@ -24,11 +24,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestClientException;
 
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudServiceExtended;
+import com.sap.cloud.lm.sl.cf.core.cf.clients.factory.CloudfoundryClientWithTimeoutFactory;
 import com.sap.cloud.lm.sl.common.ParsingException;
 
 public class ServiceUpdaterTest extends ServiceCreatorTest {
 
     private static final String SERVICE_INSTANCES_URL = "/v2/service_instances";
+    private CloudfoundryClientWithTimeoutFactory timeoutClientsFactory;
 
     @InjectMocks
     private ServiceUpdater serviceUpdater = new ServiceUpdater() {
@@ -94,6 +96,13 @@ public class ServiceUpdaterTest extends ServiceCreatorTest {
             Mockito.when(client.getService(input.getService().getName())).thenThrow(
                 new CloudFoundryException(HttpStatus.NOT_FOUND, "Not Found", "Service '" + input.getService().getName() + "' not found."));
         }
+
+        preprareFactory();
+    }
+
+    private void preprareFactory() {
+        timeoutClientsFactory = Mockito.mock(CloudfoundryClientWithTimeoutFactory.class);
+        Mockito.when(timeoutClientsFactory.getCloudFoundryClient()).thenReturn(client);
     }
 
     @Override
@@ -108,7 +117,7 @@ public class ServiceUpdaterTest extends ServiceCreatorTest {
 
     @Test
     public void testExecuteServiceOperation() throws RestClientException, MalformedURLException {
-        serviceUpdater.updateServicePlan(client, input.getService().getName(), input.getService().getPlan());
+        serviceUpdater.updateServicePlan(timeoutClientsFactory, input.getService().getName(), input.getService().getPlan());
 
         validateRestCall();
     }
