@@ -111,7 +111,7 @@ public class UndeployAppStep extends SyncActivitiStep {
         if (route.getAppsUsingRoute() > 1) {
             return;
         }
-        new ClientHelper(clientsFactory.getCloudFoundryClientWithoutTimeout()).deleteRoute(uri, isPortBasedRouting);
+        new ClientHelper(clientsFactory).deleteRoute(uri, isPortBasedRouting);
         getStepLogger().debug(Messages.ROUTE_DELETED, uri);
     }
 

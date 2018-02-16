@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudInfoExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudTask;
 import com.sap.cloud.lm.sl.cf.core.cf.clients.ApplicationRoutesGetter;
+import com.sap.cloud.lm.sl.cf.core.cf.clients.factory.CloudfoundryClientWithTimeoutFactory;
 import com.sap.cloud.lm.sl.cf.process.Constants;
 import com.sap.cloud.lm.sl.cf.process.util.OneOffTasksSupportChecker;
 import com.sap.cloud.lm.sl.common.util.JsonUtil;
@@ -81,8 +82,14 @@ public class UndeployAppStepTest extends SyncActivitiStepTest<UndeployAppStep> {
     public void setUp() throws Exception {
         prepareContext();
         prepareClient();
+
+        CloudfoundryClientWithTimeoutFactory clientsFactory = Mockito.mock(CloudfoundryClientWithTimeoutFactory.class);
+        Mockito.when(clientsFactory.getCloudFoundryClientWithoutTimeout()).thenReturn(client);
+        Mockito.when(clientsFactory.getCloudFoundryClient()).thenReturn(client);
+        Mockito.when(clientsFactory.getClientExtensions()).thenReturn(clientExtensions);
+
+        Mockito.when(execution.getTimeoutClientsFactory()).thenReturn(clientsFactory);
         Mockito.when(oneOffTasksSupportChecker.areOneOffTasksSupported(client)).thenReturn(!stepInput.tasksPerApplication.isEmpty());
-        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
     }
 
     @Test

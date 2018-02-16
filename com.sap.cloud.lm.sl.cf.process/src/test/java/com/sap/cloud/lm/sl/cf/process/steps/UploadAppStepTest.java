@@ -66,6 +66,7 @@ public class UploadAppStepTest {
             StepsTestUtil.mockApplicationsToDeploy(Arrays.asList(new SimpleApplication(APP_NAME, 2).toCloudApplication()), context);
             context.setVariable(Constants.VAR_APPS_INDEX, 0);
             Mockito.when(execution.getClientExtensions(ORG_NAME, SPACE_NAME)).thenReturn(clientExtensions);
+            Mockito.when(execution.getClientExtensionsWithoutTimeout()).thenReturn(clientExtensions);
         }
 
         @Test
@@ -78,6 +79,8 @@ public class UploadAppStepTest {
 
         @Test(expected = SLException.class)
         public void testPollStatus2() throws Exception {
+            when(execution.getCloudFoundryClientWithoutTimeout())
+                .thenThrow(new SLException(new CloudFoundryException(HttpStatus.BAD_REQUEST)));
             step.execute(context);
         }
 
@@ -197,8 +200,10 @@ public class UploadAppStepTest {
         }
 
         public void prepareClients() throws Exception {
+            when(execution.getContextExtensionDao()).thenReturn(contextExtensionDao);
             if (clientSupportsExtensions) {
                 Mockito.when(execution.getClientExtensionsWithoutTimeout()).thenReturn(clientExtensions);
+                Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
                 if (expectedIOExceptionMessage == null && expectedCFExceptionMessage == null) {
                     when(clientExtensions.asynchUploadApplication(eq(APP_NAME), eq(appFile), any())).thenReturn(TOKEN);
                 } else if (expectedIOExceptionMessage != null) {

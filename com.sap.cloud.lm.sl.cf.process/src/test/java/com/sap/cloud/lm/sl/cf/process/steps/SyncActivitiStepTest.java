@@ -92,10 +92,6 @@ public abstract class SyncActivitiStepTest<T extends SyncActivitiStep> {
         when(execution.getCloudFoundryClientWithoutTimeout()).thenReturn(client);
         when(execution.getCloudFoundryClient(anyString(), anyString())).thenReturn(client);
         when(execution.getCloudFoundryClientWithoutTimeout(anyString(), anyString())).thenReturn(client);
-        // when(execution.getClientExtensions()).thenReturn(clientExtensions);
-        // when(execution.getClientExtensionsWithoutTimeout()).thenReturn(clientExtensions);
-        // when(execution.getClientExtensions(anyString(), anyString())).thenReturn(clientExtensions);
-        // when(execution.getClientExtensionsWithoutTimeout(anyString(), anyString())).thenReturn(clientExtensions);
         when(execution.getProcessLoggerProviderFactory()).thenReturn(processLoggerProviderFactory);
         when(execution.getContextExtensionDao()).thenReturn(contextExtensionDao);
 

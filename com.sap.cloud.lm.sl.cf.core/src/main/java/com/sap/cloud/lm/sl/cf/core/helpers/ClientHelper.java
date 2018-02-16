@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 
 import com.sap.cloud.lm.sl.cf.client.ClientExtensions;
 import com.sap.cloud.lm.sl.cf.core.cf.clients.SpaceGetterFactory;
+import com.sap.cloud.lm.sl.cf.core.cf.clients.factory.CloudfoundryClientWithTimeoutFactory;
 import com.sap.cloud.lm.sl.cf.core.util.UriUtil;
 import com.sap.cloud.lm.sl.common.util.Pair;
 
@@ -19,9 +20,16 @@ public class ClientHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientHelper.class);
 
     private CloudFoundryOperations client;
+    private ClientExtensions clientExtensions;
 
     public ClientHelper(CloudFoundryOperations client) {
         this.client = client;
+        this.clientExtensions = (client instanceof ClientExtensions) ? (ClientExtensions) client : null;
+    }
+
+    public ClientHelper(CloudfoundryClientWithTimeoutFactory timeoutClientsFactory) {
+        this.client = timeoutClientsFactory.getCloudFoundryClient();
+        this.clientExtensions = timeoutClientsFactory.getClientExtensions();
     }
 
     public void deleteRoute(String uri, boolean portBasedRouting) {
@@ -29,8 +37,7 @@ public class ClientHelper {
             uri = UriUtil.removePort(uri);
         }
         Pair<String, String> hostAndDomain = UriUtil.getHostAndDomain(uri);
-        if (client instanceof ClientExtensions) {
-            ClientExtensions clientExtensions = (ClientExtensions) client;
+        if (clientExtensions != null) {
             clientExtensions.deleteRoute(hostAndDomain._1, hostAndDomain._2, UriUtil.getPath(uri));
         } else {
             client.deleteRoute(hostAndDomain._1, hostAndDomain._2);

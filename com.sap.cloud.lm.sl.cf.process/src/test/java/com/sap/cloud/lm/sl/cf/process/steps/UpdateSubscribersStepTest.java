@@ -187,6 +187,7 @@ public class UpdateSubscribersStepTest extends SyncActivitiStepTest<UpdateSubscr
     }
 
     private void prepareClients() throws Exception {
+        when(execution.getCloudFoundryClientWithoutTimeout()).thenReturn(client);
         prepareClientProvider(input.currentSpace, null);
         clients = createClientsForSpacesOfSubscribedApps();
         for (CloudSpace space : clients.keySet()) {
@@ -197,7 +198,7 @@ public class UpdateSubscribersStepTest extends SyncActivitiStepTest<UpdateSubscr
     private void prepareClientProvider(CloudSpace space, CloudFoundryOperations clientMock) throws Exception {
         String orgName = space.getOrganization().getName();
         String spaceName = space.getName();
-        Mockito.when(execution.getClientExtensions(orgName, spaceName)).thenReturn(clientExtensions);
+        when(execution.getCloudFoundryClient(eq(orgName), eq(spaceName))).thenReturn(clientMock);
     }
 
     private Map<CloudSpace, CloudFoundryOperations> createClientsForSpacesOfSubscribedApps() {

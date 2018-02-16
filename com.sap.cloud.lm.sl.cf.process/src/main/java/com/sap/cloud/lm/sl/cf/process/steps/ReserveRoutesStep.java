@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.cloudfoundry.client.lib.CloudFoundryException;
-import org.cloudfoundry.client.lib.CloudFoundryOperations;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -30,15 +29,14 @@ public class ReserveRoutesStep extends SyncActivitiStep {
         CloudApplicationExtended app = StepsUtil.getApp(execution.getContext());
 
         try {
-            CloudFoundryOperations client = execution.getCloudFoundryClient();
+            ClientExtensions clientExtended = execution.getClientExtensions();
             boolean portBasedRouting = StepsUtil.getVariableOrDefault(execution.getContext(), Constants.VAR_PORT_BASED_ROUTING, false);
-            if (!(client instanceof ClientExtensions) || !portBasedRouting) {
+            if (clientExtended == null || !portBasedRouting) {
                 return StepPhase.DONE;
             }
             Set<Integer> allocatedPorts = StepsUtil.getAllocatedPorts(execution.getContext());
             getStepLogger().debug(Messages.ALLOCATED_PORTS, allocatedPorts);
             List<String> domains = app.getDomains();
-            ClientExtensions clientExtended = execution.getClientExtensions();
 
             for (ApplicationPort applicationPort : app.getApplicationPorts()) {
                 if (shouldReserveTcpPort(allocatedPorts, applicationPort)) {

@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.cloudfoundry.client.lib.CloudFoundryOperations;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
 
 import com.google.gson.reflect.TypeToken;
+import com.sap.cloud.lm.sl.cf.client.ClientExtensions;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.core.util.UriUtil;
 import com.sap.cloud.lm.sl.cf.process.Constants;
@@ -70,6 +72,7 @@ public class DeleteIdleRoutesStepTest extends SyncActivitiStepTest<DeleteIdleRou
 
     private List<CloudApplicationExtended> expectedAppsToDeploy;
     private List<CloudApplicationExtended> appsToDeploy;
+    private CloudFoundryOperations testClient;
 
     private StepOutput output;
     private StepInput input;
@@ -102,7 +105,8 @@ public class DeleteIdleRoutesStepTest extends SyncActivitiStepTest<DeleteIdleRou
     }
 
     private void prepareClient() {
-        Mockito.when(execution.getClientExtensions()).thenReturn(clientExtensions);
+        testClient = Mockito.mock(CloudFoundryOperations.class, Mockito.withSettings().extraInterfaces(ClientExtensions.class));
+        Mockito.when(execution.getCloudFoundryClient()).thenReturn(testClient);
         for (CloudApplicationExtended app : expectedAppsToDeploy) {
             CloudApplicationExtended existingApp = new CloudApplicationExtended(null, app.getName());
             List<String> existingUris = new ArrayList<>(app.getUris());
@@ -119,13 +123,13 @@ public class DeleteIdleRoutesStepTest extends SyncActivitiStepTest<DeleteIdleRou
         assertStepFinishedSuccessfully();
 
         if (CollectionUtils.isEmpty(output.urisToDelete)) {
-            verify(clientExtensions, never()).deleteRoute(anyString(), anyString(), anyString());
+            verify((ClientExtensions) testClient, never()).deleteRoute(anyString(), anyString(), anyString());
             return;
         }
 
         for (String uri : output.urisToDelete) {
             Pair<String, String> hostAndDomain = UriUtil.getHostAndDomain(uri);
-            verify(clientExtensions, times(1)).deleteRoute(hostAndDomain._1, hostAndDomain._2, null);
+            verify((ClientExtensions) testClient, times(1)).deleteRoute(hostAndDomain._1, hostAndDomain._2, null);
         }
     }
 
