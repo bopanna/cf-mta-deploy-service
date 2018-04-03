@@ -279,15 +279,18 @@ public class UploadAppStep extends TimeoutAsyncActivitiStep {
             } catch (SLException | FileStorageException e) {
                 getStepLogger().error(e, Messages.ERROR_UPLOADING_APP, app.getName());
                 logException(execution.getContext(), e);
+                StepsUtil.setStepPhase(execution, StepPhase.RETRY);
                 throw new SLException(e, e.getMessage());
             } catch (CloudFoundryException cfe) {
                 SLException e = StepsUtil.createException(cfe);
                 getStepLogger().error(e, Messages.ERROR_UPLOADING_APP, app.getName());
                 logException(execution.getContext(), e);
+                StepsUtil.setStepPhase(execution, StepPhase.RETRY);
                 throw e;
             } catch (Throwable e) {
                 Throwable eWithMessage = getWithProperMessage(e);
                 logException(execution.getContext(), eWithMessage);
+                StepsUtil.setStepPhase(execution, StepPhase.RETRY);
                 if (e instanceof Exception) {
                     // only wrap Runtime & checked exceptions as Runtime ones
                     throw new RuntimeException(eWithMessage.getMessage(), eWithMessage);
