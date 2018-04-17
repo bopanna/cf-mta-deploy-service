@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.cloudfoundry.client.lib.CloudControllerException;
 import org.cloudfoundry.client.lib.CloudFoundryException;
 import org.cloudfoundry.client.lib.CloudFoundryOperations;
 import org.cloudfoundry.client.lib.domain.CloudApplication;
@@ -63,7 +64,7 @@ public class CheckForCreationConflictsStep extends SyncActivitiStep {
             getStepLogger().error(e, Messages.ERROR_VALIDATING_APPLICATIONS);
             throw e;
         } catch (CloudFoundryException cfe) {
-            SLException e = StepsUtil.createException(cfe);
+            CloudControllerException e = new CloudControllerException(cfe);
             getStepLogger().error(e, Messages.ERROR_VALIDATING_APPLICATIONS);
             throw e;
         }
@@ -182,11 +183,10 @@ public class CheckForCreationConflictsStep extends SyncActivitiStep {
 
     private boolean deployedMtaContainsApplication(DeployedMta deployedMta, CloudApplication existingApp) {
         String appName = existingApp.getName();
-        return deployedMta == null ? false
-            : deployedMta.getModules()
-                .stream()
-                .anyMatch(module -> module.getAppName()
-                    .equals(appName));
+        return deployedMta == null ? false : deployedMta.getModules()
+            .stream()
+            .anyMatch(module -> module.getAppName()
+                .equals(appName));
     }
 
     private Map<String, CloudApplication> createExistingApplicationsMap(List<CloudApplication> existingApps) {
